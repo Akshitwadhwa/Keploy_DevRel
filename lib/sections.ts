@@ -1,0 +1,16 @@
+export const sections = [
+  { id: "what-you-are-building", label: "What you are building" },
+  { id: "why-keploy-is-useful-here", label: "Why Keploy is useful" },
+  { id: "why-this-sample-on-a-mac", label: "Why this sample on a Mac" },
+  { id: "prerequisites", label: "Prerequisites" },
+  { id: "start-mysql", label: "Start MySQL" },
+  { id: "set-the-connection-string", label: "Connection string" },
+  { id: "build-the-binary", label: "Build the binary" },
+  { id: "record", label: "Record" },
+  { id: "send-the-two-requests", label: "Send the two requests" },
+  { id: "stop-the-recording", label: "Stop the recording" },
+  { id: "stop-mysql", label: "Stop MySQL" },
+  { id: "replay", label: "Replay" },
+  { id: "what-the-keploy-folder-is", label: "The keploy folder" },
+  { id: "what-tripped-me-up", label: "What tripped me up" },
+] as const;
