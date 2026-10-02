@@ -7,13 +7,13 @@ export function DocsShell({ children }: { children: ReactNode }) {
     <div className="min-h-full">
       <header className="docs-header">
         <div className="docs-header-bar">
-          <a href="#what-you-are-building" className="docs-brand">
+          <a href="#the-app" className="docs-brand">
             <span className="docs-mark" aria-hidden>
               <span />
             </span>
             <span>
               <span className="docs-brand-title">mux-mysql notes</span>
-              <span className="docs-brand-sub">A Keploy beginner walkthrough</span>
+              <span className="docs-brand-sub">Record once. Replay without MySQL.</span>
             </span>
           </a>
           <div className="docs-header-actions">
@@ -39,7 +39,7 @@ export function DocsShell({ children }: { children: ReactNode }) {
         <article className="docs">
           {children}
           <footer className="docs-footer">
-            Record the mux-mysql sample with Keploy, then replay the tests with MySQL stopped.
+            Real Mux handlers. Captured MySQL. No database on replay.
           </footer>
         </article>
       </div>
