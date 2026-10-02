@@ -1,9 +1,9 @@
 const facts = [
   ["Sample", "mux-mysql"],
-  ["CLI", "Keploy 3.8.58"],
-  ["Go", "1.27.1"],
-  ["Host", "Apple Silicon"],
-  ["Result", "2 passed"],
+  ["App", "Go + Mux"],
+  ["Database", "MySQL 8"],
+  ["Calls", "POST + GET"],
+  ["Replay", "MySQL mocked"],
 ] as const;
 
 export function RunMeta() {

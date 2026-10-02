@@ -13,7 +13,7 @@ export function DocsShell({ children }: { children: ReactNode }) {
             </span>
             <span>
               <span className="docs-brand-title">mux-mysql notes</span>
-              <span className="docs-brand-sub">Keploy on Apple Silicon</span>
+              <span className="docs-brand-sub">A Keploy beginner walkthrough</span>
             </span>
           </a>
           <div className="docs-header-actions">
@@ -39,8 +39,7 @@ export function DocsShell({ children }: { children: ReactNode }) {
         <article className="docs">
           {children}
           <footer className="docs-footer">
-            Written from a native record of the mux-mysql sample with Keploy CLI 3.8.58.
-            Replay passed after MySQL was stopped.
+            Record the mux-mysql sample with Keploy, then replay the tests with MySQL stopped.
           </footer>
         </article>
       </div>

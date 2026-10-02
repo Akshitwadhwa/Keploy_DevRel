@@ -26,7 +26,7 @@ const mono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "Record a Go URL shortener with Keploy",
   description:
-    "A beginner walkthrough of recording the Mux + MySQL URL shortener on an Apple Silicon Mac, then replaying the tests with MySQL stopped.",
+    "A beginner walkthrough of recording the Mux + MySQL URL shortener with Keploy, then replaying the tests with MySQL stopped.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

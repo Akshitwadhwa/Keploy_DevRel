@@ -1,24 +1,24 @@
 import { Callout } from "@/components/callout";
 import { RunMeta } from "@/components/run-meta";
 
-<p className="kicker">Apple Silicon · native CLI · MySQL mocked on replay</p>
+<p className="kicker">Record once · replay without MySQL</p>
 
 # Record a Go URL shortener, then replay it without MySQL
 
-This walkthrough follows one recording that already succeeded. You point Keploy at a small Go HTTP server, send two real requests, stop MySQL, and replay those requests. The tests still pass, because Keploy answers the database from the recording.
+This page is a beginner walkthrough. You will start a small Go HTTP server, send two real requests while Keploy records them, stop MySQL, and replay the same requests. The tests still pass because Keploy answers the database from the recording.
 
 <RunMeta />
 
 ## What you are building
 
-The program is the Mux + MySQL URL shortener in the [`mux-mysql`](https://github.com/keploy/samples-go/tree/main/mux-mysql) folder of [keploy/samples-go](https://github.com/keploy/samples-go). Gorilla Mux serves it on port 8080. Two routes matter for this run:
+The program is the Mux + MySQL URL shortener in the [`mux-mysql`](https://github.com/keploy/samples-go/tree/main/mux-mysql) folder of [keploy/samples-go](https://github.com/keploy/samples-go). Gorilla Mux serves it on port 8080. Two routes matter here:
 
 - `POST /create` reads a JSON body, stores the URL, and returns a short link.
 - `GET /links/{id}` looks that id up and answers with a 307 redirect to the original URL.
 
-The sample also exposes `GET /all`. This run never called it, so it is not in the test set.
+The sample also exposes `GET /all`. This walkthrough never calls it, so it will not appear in the test set.
 
-There is no Compose file. MySQL is a container you start yourself. The Go process is an ordinary binary on the Mac, and that binary reads a single environment variable, `ConnectionString`, before it will listen.
+There is no Compose file. MySQL is a container you start yourself. The Go process is an ordinary binary on your machine, and that binary reads a single environment variable, `ConnectionString`, before it will listen.
 
 ## Why Keploy is useful here
 
@@ -26,27 +26,25 @@ Keploy turns a session you already know how to do — start the binary, send a c
 
 That is useful when you have a Go handler that talks to MySQL and you want a guard around the path you actually hit, before you sit down to write table-driven tests. A unit test of a pure function still belongs in `_test.go`. This recording covers the HTTP edge and the queries behind it, and it can run after the database container is gone.
 
-## Why this sample on a Mac
+## How recording works for this sample
 
-This run was an Apple Silicon Mac. Keploy CLI 3.8.58 was the native binary. Go 1.27.1 came from Homebrew. Docker Desktop existed only to run MySQL.
+This sample is meant to run as a host binary, with MySQL in Docker. Record that binary with Keploy. Do not switch to a `docker compose` record command from another tutorial — this folder has no Compose file, so that path does not match the code.
 
-<Callout type="info" title="MySQL can be recorded natively. Postgres could not.">
+<Callout type="info" title="Record the process that serves HTTP">
 
-On this Mac, `keploy record -c "docker compose up"` starts an eBPF agent container. That container exits 6, because debugfs and tracefs are not visible inside it. Postgres samples hit the same wall. Native record — the CLI on the host, watching a host process — works for MySQL. This folder has no Compose file, so the native path is the one that matches the code.
+Keploy watches the command you pass with `-c`. For this sample that command is `./app`. Native record — the CLI on the same machine as the Go process — is the path that matches this code.
 
 </Callout>
 
-Record `./app`. Leave the Linux Compose instructions for a Linux machine.
-
 ## Prerequisites
 
-Three tools, and then the sample:
+Install these tools, then clone the sample:
 
-- Docker Desktop, running, so it can publish MySQL on port 3306.
-- Go 1.27.1, which is the Homebrew Go this run used. `go version` should report a current 1.27 build.
-- Keploy CLI 3.8.58, installed natively. On macOS, `keploy record` and `keploy test` do not ask for `sudo`.
+- Docker, running, so it can publish MySQL on port 3306.
+- Go. Run `go version` and confirm a current 1.x toolchain is on your PATH.
+- The Keploy CLI, installed so the `keploy` command is available in a new terminal.
 
-Install Keploy from your home directory. The installer drops `install.sh` in the current folder and wires the `keploy` command for your shell. Running it inside a project leaves that script in the repo, and it is an easy way to end up with a command later terminals cannot find.
+Install Keploy from your home directory. The installer drops `install.sh` in the current folder and wires the `keploy` command for your shell. Running it inside a project leaves that script in the repo, and later terminals may not find the command.
 
 ```bash title="terminal"
 cd ~
@@ -55,7 +53,7 @@ source install.sh
 keploy version
 ```
 
-`keploy version` should print 3.8.58. The note about the process exit code further down was observed on that build.
+`keploy version` should print a version string. Keep that terminal’s PATH for the rest of the walkthrough.
 
 Clone the sample and stay in its folder for every command after this.
 
@@ -68,7 +66,7 @@ cd samples-go/mux-mysql
 
 The binary opens MySQL as soon as it finishes a short startup pause. It pings the server, then creates a `list` table if that table is missing. With nothing listening on port 3306, the process exits before it serves HTTP, and Keploy has no calls to keep.
 
-The container below is the official MySQL 8 image. The root password is the one this run put in `ConnectionString`. Port 3306 on the Mac is published to 3306 in the container. If something else already owns 3306, stop that process first or this `docker run` will fail.
+The container below is the official MySQL 8 image. The root password must match the one you put in `ConnectionString`. Port 3306 on your machine is published to 3306 in the container. If something else already owns 3306, stop that process first or this `docker run` will fail.
 
 ```bash title="terminal"
 docker run --name mux-mysql \
@@ -90,7 +88,7 @@ echo "MySQL is accepting connections"
 
 `ConnectionString` is required. The helper that reads it exits when the variable is empty, so the process never reaches the HTTP server. Export it in the shell you will use to build and record. The curl terminal does not need it.
 
-This is the value from the successful run. `root` and `my-secret-pw` match the container. `tcp(localhost:3306)` is the published port. `/mysql` is the built-in database the shortener writes into. The sample does not create a separate schema.
+`root` and `my-secret-pw` match the container. `tcp(localhost:3306)` is the published port. `/mysql` is the built-in database the shortener writes into. The sample does not create a separate schema.
 
 ```bash title="terminal"
 export ConnectionString='root:my-secret-pw@tcp(localhost:3306)/mysql'
@@ -98,9 +96,9 @@ export ConnectionString='root:my-secret-pw@tcp(localhost:3306)/mysql'
 
 ## Build the binary
 
-Build first, then record that file. Keploy instruments the command you pass with `-c`. `go run` starts the toolchain, which then starts a different process, and on macOS the interceptor can attach to the short-lived tool. `./app` is one process. That is the process you want watched.
+Build first, then record that file. Keploy instruments the command you pass with `-c`. `go run` starts the toolchain, which then starts a different process, and the interceptor can attach to the short-lived tool. `./app` is one process. That is the process you want watched.
 
-The name `app` is arbitrary as long as record and test use the same path. This run used `./app`.
+The name `app` is arbitrary as long as record and test use the same path.
 
 ```bash title="terminal"
 go build -o app .
@@ -110,7 +108,7 @@ The first build downloads modules. When it finishes, `mux-mysql/app` is the bina
 
 ## Record
 
-Stay in the shell where `ConnectionString` is exported, so the binary inherits it. No `sudo`. On Apple Silicon the CLI intercepts in userspace. It does not load an eBPF program, and it does not prompt for a password.
+Stay in the shell where `ConnectionString` is exported, so the binary inherits it.
 
 ```bash title="terminal"
 keploy record -c "./app"
@@ -165,11 +163,11 @@ export ConnectionString='root:my-secret-pw@tcp(localhost:3306)/mysql'
 keploy test -c "./app"
 ```
 
-This run reported total tests 2, passed 2, failed 0, and a log line that reads `replay completed successfully`.
+A successful replay reports two tests, both passed, and a log line that reads `replay completed successfully`.
 
 <Callout type="warning" title="Judge the test summary">
 
-On CLI 3.8.58 the `keploy` process can still exit 1 after every test has passed. The shell status is a poor signal on this version. Read the summary: total tests 2, passed 2, failed 0, and the line `replay completed successfully`.
+The `keploy` process can still exit with a non-zero status after every test has passed. The shell status is a poor signal. Read the summary: total tests 2, passed 2, failed 0, and the line `replay completed successfully`.
 
 </Callout>
 
@@ -189,10 +187,10 @@ The mocks sit with those tests. While the two calls ran, the binary talked to My
 
 Change the SQL or the JSON shape and replay fails on purpose. That failure is the regression signal. Record again when the new behavior is the one you want to keep.
 
-## What tripped me up
+## If something goes wrong
 
-<Callout type="warning" title="Three things that wasted time">
+<Callout type="warning" title="Three common mistakes">
 
-Install Keploy from your home directory, so the `keploy` command is on your PATH. Record the built binary with `keploy record -c "./app"`, rather than `go run`. Skip the Linux docker-compose record section on a Mac. `keploy record -c "docker compose up"` starts an eBPF agent container that exits 6, because debugfs and tracefs are not visible inside the container. This sample has no Compose file. Native record is what worked.
+Install Keploy from your home directory, so the `keploy` command is on your PATH. Record the built binary with `keploy record -c "./app"`, rather than `go run`. Stay on native record for this sample. It has no Compose file, so a `docker compose` record command from another tutorial will not match this project.
 
 </Callout>
